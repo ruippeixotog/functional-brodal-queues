@@ -1,13 +1,12 @@
 import org.specs2.mutable._
 
-import BinomialQueue._
 import util.Random
 
 class BinomialQueueSpec extends Specification {
 
   def extractMins[T <% Ordered[T]](q: BinomialQueue[T], nMins: Int): Seq[T] = {
     (1 to nMins).foldLeft((Seq[T](), q)) { case ((mins, qi), _) =>
-        (mins :+ qi.findMin, qi.withoutMin)
+        (mins :+ qi.min, qi.withoutMin)
     }._1
   }
 
@@ -15,20 +14,20 @@ class BinomialQueueSpec extends Specification {
 
   "a binomial queue" should {
     "be created empty" in {
-      BinomialQueue[Int]().findMin must throwA[NoSuchElementException]
+      BinomialQueue[Int]().min must throwA[NoSuchElementException]
     }
 
     "return the correct minimum" in {
-      BinomialQueue(3, 4, 2, 6).findMin mustEqual 2
+      BinomialQueue(3, 4, 2, 6).min mustEqual 2
 
       val seq1 = randomSeq(1000)
       val q = BinomialQueue(seq1: _*)
-      q.findMin mustEqual seq1.min
+      q.min mustEqual seq1.min
       extractMins(q, 1000) mustEqual seq1.sorted
     }
 
     "delete the minimum element" in {
-      BinomialQueue(3, 4, 2, 6).withoutMin.findMin mustEqual 3
+      BinomialQueue(3, 4, 2, 6).withoutMin.min mustEqual 3
 
       val seq1 = randomSeq(1000)
       val q = BinomialQueue(seq1: _*)
@@ -36,7 +35,7 @@ class BinomialQueueSpec extends Specification {
     }
 
     "insert correctly new elements" in {
-      BinomialQueue(2).insert(1).findMin mustEqual 1
+      BinomialQueue(2).insert(1).min mustEqual 1
 
       val seq1 = randomSeq(1000)
       val newElem = Random.nextInt()
