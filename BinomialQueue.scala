@@ -27,6 +27,8 @@ case class BinomialQueue[T <% Ordered[T]](nodes: List[Node[T]])
   implicit private def asNodeList(q: BinomialQueue[T]) = q.nodes
   implicit private def asBinomialQueue(nodes: List[Node[T]]) = new BinomialQueue(nodes)
 
+  def isEmpty = nodes.isEmpty
+
   def insert(e: T): BinomialQueue[T] = insert(Node(e))
 
   private def insert(n: Node[T]): BinomialQueue[T] = nodes match {

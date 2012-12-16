@@ -34,6 +34,8 @@ case class SkewBinomialQueue[T <% Ordered[T]](nodes: List[Node[T]])
   implicit private def asSkewBinomialQueue(nodes: List[Node[T]]) =
     new SkewBinomialQueue(nodes)
 
+  def isEmpty = nodes.isEmpty
+
   def insert(e: T): SkewBinomialQueue[T] = nodes match {
     case ts @ t1 :: t2 :: rest =>
       if (t1.rank == t2.rank) Node(e).skewLink(t1, t2) :: rest
