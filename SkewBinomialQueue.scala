@@ -41,9 +41,8 @@ case class SkewBinomialQueue[T <% Ordered[T]](nodes: List[Node[T]])
   def isEmpty = nodes.isEmpty
 
   def insert(e: T): SkewBinomialQueue[T] = nodes match {
-    case ts @ t1 :: t2 :: rest =>
-      if (t1.rank == t2.rank) Node(e).skewLink(t1, t2) :: rest
-      else Node(e) :: ts
+    case t1 :: t2 :: rest if t1.rank == t2.rank =>
+      Node(e).skewLink(t1, t2) :: rest
     case ts => Node(e) :: ts
   }
 
@@ -91,6 +90,7 @@ case class SkewBinomialQueue[T <% Ordered[T]](nodes: List[Node[T]])
         if (t.root < t2.root) (t, ts) else (t2, t :: ts2)
     }
 
+    @tailrec
     def split(q: List[Node[T]],
               trees: List[Node[T]],
               singletons: List[T]): (SkewBinomialQueue[T], List[T]) = q match {
