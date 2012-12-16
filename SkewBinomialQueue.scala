@@ -5,6 +5,10 @@ object SkewBinomialQueue {
   def apply[T <% Ordered[T]](seq: T*): SkewBinomialQueue[T] =
     seq.foldLeft(SkewBinomialQueue(List[Node[T]]()))(_.insert(_))
 
+  implicit object Factory extends QueueFactory[SkewBinomialQueue] {
+    def empty[T <% Ordered[T]] = SkewBinomialQueue[T]()
+  }
+
   case class Node[T <% Ordered[T]] private(root: T, rank: Int, children: List[Node[T]]) {
     def link(that: Node[T]): Node[T] = {
       require(rank == that.rank)

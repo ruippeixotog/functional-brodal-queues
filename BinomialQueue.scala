@@ -6,11 +6,13 @@ object BinomialQueue {
   def apply[T <% Ordered[T]](seq: T*): BinomialQueue[T] =
     seq.foldLeft(BinomialQueue(List[Node[T]]()))(_.insert(_))
 
+  implicit object Factory extends QueueFactory[BinomialQueue] {
+    def empty[T <% Ordered[T]] = BinomialQueue[T]()
+  }
+
   case class Node[T <% Ordered[T]] private(root: T, rank: Int, children: List[Node[T]]) {
     def link(that: Node[T]): Node[T] = {
       require(rank == that.rank)
-
-      // make the tree with the smaller root the root of the new tree
       if (root < that.root) Node(root, rank + 1, that :: children)
       else Node(that.root, that.rank + 1, this :: that.children)
     }

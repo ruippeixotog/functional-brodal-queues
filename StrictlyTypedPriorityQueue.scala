@@ -7,4 +7,3 @@ trait StrictlyTypedPriorityQueue[T, Q <: StrictlyTypedPriorityQueue[T, Q]] {
   def meld(q: Q): Q
   def withoutMin: Q
 }
-

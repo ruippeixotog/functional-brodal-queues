@@ -1,11 +1,12 @@
 import util.Random
 import org.specs2.mutable._
 
-trait PriorityQueueSpec[Q[U] <: StrictlyTypedPriorityQueue[U, Q[U]]] extends Specification {
+abstract class PriorityQueueSpec[Q[U] <: StrictlyTypedPriorityQueue[U, Q[U]]](
+  implicit factory: QueueFactory[Q]) extends Specification {
 
   def queueName: String
-  def emptyQueue[T <% Ordered[T]]: Q[T]
-  def createQueue[T <% Ordered[T]](s: T*) = s.foldLeft(emptyQueue)(_ insert _)
+
+  def createQueue[T <% Ordered[T]](s: T*) = s.foldLeft(factory.empty)(_ insert _)
 
   def extractMins[T](q: Q[T], nMins: Int): Seq[T] = {
     (1 to nMins).foldLeft((Seq[T](), q)) { case ((mins, qi), _) =>
@@ -17,8 +18,8 @@ trait PriorityQueueSpec[Q[U] <: StrictlyTypedPriorityQueue[U, Q[U]]] extends Spe
 
   ("a " + queueName) should {
     "be created empty" in {
-      emptyQueue[Int].isEmpty must beTrue
-      emptyQueue[Int].min must throwA[NoSuchElementException]
+      factory.empty[Int].isEmpty must beTrue
+      factory.empty[Int].min must throwA[NoSuchElementException]
     }
 
     "return the correct minimum" in {

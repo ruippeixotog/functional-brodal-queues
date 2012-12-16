@@ -1,48 +1,55 @@
 
 object QueueBootstrap {
-  def apply[T <% Ordered[T], Q <: StrictlyTypedPriorityQueue[T, Q]](q: Q): QueueBootstrap[T, Q] =
-    if (q.isEmpty) EmptyBootstrap[T, Q](q)
-    else NonEmptyBootstrap(q, q.min)
+  def apply[T, Q[U] <: StrictlyTypedPriorityQueue[U, Q[U]]](
+    implicit tOrdered: T => Ordered[T], factory: QueueFactory[Q]): QueueBootstrap[T, Q] = EmptyBootstrap[T, Q]
+
+  implicit def Factory[Q[U] <: StrictlyTypedPriorityQueue[U, Q[U]]](implicit innerFact: QueueFactory[Q]) =
+    new QueueFactory[({ type λ[T] = QueueBootstrap[T, Q] })#λ] {
+      def empty[T <% Ordered[T]] = QueueBootstrap[T, Q]
+    }
 }
 
-trait QueueBootstrap[T, Q <: StrictlyTypedPriorityQueue[T, Q]]
-  extends StrictlyTypedPriorityQueue[T, QueueBootstrap[T, Q]] {
-  val queue: Q
-}
+trait QueueBootstrap[T, Q[U] <: StrictlyTypedPriorityQueue[U, Q[U]]]
+  extends StrictlyTypedPriorityQueue[T, QueueBootstrap[T, Q]]
 
-case class EmptyBootstrap[T <% Ordered[T], Q <: StrictlyTypedPriorityQueue[T, Q]](queue: Q)
+case class EmptyBootstrap[T, Q[U] <: StrictlyTypedPriorityQueue[U, Q[U]]](
+  implicit tOrdered: T => Ordered[T], factory: QueueFactory[Q])
   extends QueueBootstrap[T, Q] {
 
   def isEmpty: Boolean = true
 
-  def insert(e: T): QueueBootstrap[T, Q] = NonEmptyBootstrap(queue.insert(e), e)
+  def insert(e: T): QueueBootstrap[T, Q] = NonEmptyBootstrap[T, Q](factory.empty, e)
 
   def min: T = throw new NoSuchElementException
 
-  def meld(q2: QueueBootstrap[T, Q]): QueueBootstrap[T, Q] =
-    if(q2.isEmpty) EmptyBootstrap(queue meld q2.queue)
-    else NonEmptyBootstrap(queue meld q2.queue, q2.min)
+  def meld(q2: QueueBootstrap[T, Q]): QueueBootstrap[T, Q] = q2
 
   def withoutMin: QueueBootstrap[T, Q] = throw new NoSuchElementException
 }
 
-case class NonEmptyBootstrap[T <% Ordered[T], Q <: StrictlyTypedPriorityQueue[T, Q]](queue: Q, minElem: T)
-  extends QueueBootstrap[T, Q] {
+case class NonEmptyBootstrap[T, Q[U] <: StrictlyTypedPriorityQueue[U, Q[U]]](queue: Q[NonEmptyBootstrap[T, Q]], minElem: T)(
+  implicit tOrdered: T => Ordered[T], factory: QueueFactory[Q])
+  extends QueueBootstrap[T, Q] with Ordered[NonEmptyBootstrap[T, Q]] {
 
   def isEmpty: Boolean = false
 
   def insert(e: T): QueueBootstrap[T, Q] =
-    NonEmptyBootstrap(queue.insert(e), (if (e < minElem) e else minElem))
+    this meld NonEmptyBootstrap(factory.empty, e)
 
   def min: T = minElem
 
-  def meld(q2: QueueBootstrap[T, Q]): QueueBootstrap[T, Q] =
-    if(q2.isEmpty) NonEmptyBootstrap(queue meld q2.queue, minElem)
-    else NonEmptyBootstrap(queue meld q2.queue, (if (q2.min < minElem) q2.min else minElem))
+  def meld(q2: QueueBootstrap[T, Q]): QueueBootstrap[T, Q] = q2 match {
+    case q2 @ NonEmptyBootstrap(q2q, q2min) =>
+      if (q2min < minElem) NonEmptyBootstrap(q2q.insert(this), q2min)
+      else NonEmptyBootstrap(queue.insert(q2), minElem)
+    case _ => this
+  }
 
   def withoutMin: QueueBootstrap[T, Q] = {
     val newQueue = queue.withoutMin
-    if (newQueue.isEmpty) EmptyBootstrap(newQueue)
-    else NonEmptyBootstrap(newQueue, newQueue.min)
+    val minQueue = queue.min
+    NonEmptyBootstrap(minQueue.queue meld newQueue, minQueue.min)
   }
+
+  def compare(that: NonEmptyBootstrap[T, Q]): Int = minElem compare that.minElem
 }
