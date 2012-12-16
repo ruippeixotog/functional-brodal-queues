@@ -1,3 +1,4 @@
+import annotation.tailrec
 import SkewBinomialQueue._
 
 object SkewBinomialQueue {
@@ -40,6 +41,7 @@ case class SkewBinomialQueue[T <% Ordered[T]](nodes: List[Node[T]])
     case ts => Node(e) :: ts
   }
 
+  @tailrec
   private def insert(n: Node[T]): SkewBinomialQueue[T] = nodes match {
     case Nil => List(n)
     case t :: ts =>
@@ -47,17 +49,24 @@ case class SkewBinomialQueue[T <% Ordered[T]](nodes: List[Node[T]])
       if (n.rank < t.rank) n :: t :: ts else ts.insert(n.link(t))
   }
 
+  def meldUniq(that: SkewBinomialQueue[T]): SkewBinomialQueue[T] =
+    (nodes, that.nodes) match {
+      case (Nil, q) => q
+      case (q, Nil) => q
+      case (t1 :: ts1, t2 :: ts2) =>
+        if (t1.rank < t2.rank) t1 :: (ts1 meldUniq t2 :: ts2)
+        else if (t1.rank > t2.rank) t2 :: (t1 :: ts1 meldUniq ts2)
+        else ts1 meldUniq ts2 insert t1.link(t2)
+    }
+
   def meld(that: SkewBinomialQueue[T]): SkewBinomialQueue[T] = (nodes, that.nodes) match {
-    case (Nil, q) => q
-    case (q, Nil) => q
-    case (t1 :: ts1, t2 :: ts2) =>
-      if (t1.rank < t2.rank) t1 :: (ts1 meld t2 :: ts2)
-      else if (t1.rank > t2.rank) t2 :: (t1 :: ts1 meld ts2)
-      else ts1 meld ts2 insert t1.link(t2)
+    case (t1 :: ts1, t2 :: ts2) => ts1.insert(t1) meldUniq ts2.insert(t2)
+    case _ => this meldUniq that
   }
 
   def min: T = {
-    def findMinAux(q: SkewBinomialQueue[T], currMin: T): T = q.nodes match {
+    @tailrec
+    def findMinAux(q: List[Node[T]], currMin: T): T = q match {
       case Nil => currMin
       case t :: ts => findMinAux(ts, if (currMin < t.root) currMin else t.root)
     }
@@ -75,7 +84,18 @@ case class SkewBinomialQueue[T <% Ordered[T]](nodes: List[Node[T]])
         val (t2, ts2) = getMin(ts)
         if (t.root < t2.root) (t, ts) else (t2, t :: ts2)
     }
+
+    def split(q: List[Node[T]],
+              trees: List[Node[T]],
+              singletons: List[T]): (SkewBinomialQueue[T], List[T]) = q match {
+      case Nil => (trees, singletons)
+      case t :: ts =>
+        if(t.rank == 0) split(ts, trees, t.root :: singletons)
+        else split(ts, t :: trees, singletons)
+    }
+
     val (Node(_, _, c), ts2) = getMin(nodes)
-    c.reverse meld ts2
+    val (ts0, singletons) = split(c, Nil, Nil)
+    singletons.foldLeft(ts0 meld ts2)(_ insert _)
   }
 }

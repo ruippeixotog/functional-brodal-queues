@@ -25,7 +25,6 @@ trait PriorityQueueSpec[Q[U] <: StrictlyTypedPriorityQueue[U, Q[U]]] extends Spe
       val seq1 = randomSeq(1000)
       val q = createQueue(seq1: _*)
       q.min mustEqual seq1.min
-      extractMins(q, 1000) mustEqual seq1.sorted
     }
 
     "delete the minimum element" in {
