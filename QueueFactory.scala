@@ -1,4 +1,5 @@
 
-trait QueueFactory[Q[_]] {
+trait QueueFactory[Q[U] <: StrictlyTypedPriorityQueue[U, Q[U]]] {
   def empty[T <% Ordered[T]]: Q[T]
+  def create[T <% Ordered[T]](elems: T*) = elems.foldLeft(empty)(_ insert _)
 }
