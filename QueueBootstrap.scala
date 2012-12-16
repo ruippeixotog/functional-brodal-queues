@@ -46,9 +46,11 @@ case class NonEmptyBootstrap[T, Q[U] <: StrictlyTypedPriorityQueue[U, Q[U]]](que
   }
 
   def withoutMin: QueueBootstrap[T, Q] = {
-    val newQueue = queue.withoutMin
-    val minQueue = queue.min
-    NonEmptyBootstrap(minQueue.queue meld newQueue, minQueue.min)
+    if(queue.isEmpty) EmptyBootstrap()
+    else {
+      val minQueue = queue.min
+      NonEmptyBootstrap(minQueue.queue meld queue.withoutMin, minQueue.min)
+    }
   }
 
   def compare(that: NonEmptyBootstrap[T, Q]): Int = minElem compare that.minElem
