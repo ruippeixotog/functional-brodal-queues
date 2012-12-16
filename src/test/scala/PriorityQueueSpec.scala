@@ -4,7 +4,8 @@ import org.specs2.mutable._
 trait PriorityQueueSpec[Q[U] <: StrictlyTypedPriorityQueue[U, Q[U]]] extends Specification {
 
   def queueName: String
-  def createQueue[T <% Ordered[T]](s: T*): Q[T]
+  def emptyQueue[T <% Ordered[T]]: Q[T]
+  def createQueue[T <% Ordered[T]](s: T*) = s.foldLeft(emptyQueue)(_ insert _)
 
   def extractMins[T](q: Q[T], nMins: Int): Seq[T] = {
     (1 to nMins).foldLeft((Seq[T](), q)) { case ((mins, qi), _) =>
@@ -16,10 +17,12 @@ trait PriorityQueueSpec[Q[U] <: StrictlyTypedPriorityQueue[U, Q[U]]] extends Spe
 
   ("a " + queueName) should {
     "be created empty" in {
-      createQueue[Int]().min must throwA[NoSuchElementException]
+      emptyQueue[Int].isEmpty must beTrue
+      emptyQueue[Int].min must throwA[NoSuchElementException]
     }
 
     "return the correct minimum" in {
+      createQueue(3, 4, 2, 6).isEmpty must beFalse
       createQueue(3, 4, 2, 6).min mustEqual 2
 
       val seq1 = randomSeq(1000)
