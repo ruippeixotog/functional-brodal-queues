@@ -87,7 +87,7 @@ object Benchmark extends App {
   } yield (op, nElems, res)).groupBy(_._1).mapValues(_.map(p => (p._2, p._3)).toMap)
 
   println("Ratios for insert: " + complexityTest(resultsByOp('insert), const).mkString(","))
-  println("Ratios for min: " + complexityTest(resultsByOp('min), logN).mkString(","))
-  println("Ratios for delete: " + complexityTest(resultsByOp('delete), const).mkString(","))
+  println("Ratios for min: " + complexityTest(resultsByOp('min), const).mkString(","))
+  println("Ratios for delete: " + complexityTest(resultsByOp('delete), logN).mkString(","))
   println("Ratios for meld: " + complexityTest(resultsByOp('meld), const).mkString(","))
 }
