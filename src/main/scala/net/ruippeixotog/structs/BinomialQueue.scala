@@ -1,3 +1,5 @@
+package net.ruippeixotog.structs
+
 import java.util.NoSuchElementException
 
 import BinomialQueue._

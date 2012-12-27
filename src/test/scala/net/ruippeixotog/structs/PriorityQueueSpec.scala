@@ -1,3 +1,5 @@
+package net.ruippeixotog.structs
+
 import util.Random
 import org.specs2.mutable._
 

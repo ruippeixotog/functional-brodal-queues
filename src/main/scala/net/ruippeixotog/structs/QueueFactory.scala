@@ -1,3 +1,5 @@
+package net.ruippeixotog.structs
+
 
 trait QueueFactory[Q[U] <: StrictlyTypedPriorityQueue[U, Q[U]]] {
   def empty[T <% Ordered[T]]: Q[T]

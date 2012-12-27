@@ -1,3 +1,4 @@
+package net.ruippeixotog.structs
 
 import compat.Platform._
 import scala.math._

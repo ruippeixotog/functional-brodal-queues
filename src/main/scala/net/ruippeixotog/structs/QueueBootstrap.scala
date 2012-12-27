@@ -1,3 +1,5 @@
+package net.ruippeixotog.structs
+
 
 object QueueBootstrap {
   def apply[T, Q[U] <: StrictlyTypedPriorityQueue[U, Q[U]]](

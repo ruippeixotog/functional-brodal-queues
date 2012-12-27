@@ -1,3 +1,4 @@
+package net.ruippeixotog.structs
 
 class BootstrappedSkewBinomialQueueSpec
   extends PriorityQueueSpec[({ type λ[T] = QueueBootstrap[T, SkewBinomialQueue] })#λ] {

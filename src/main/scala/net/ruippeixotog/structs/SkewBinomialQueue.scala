@@ -1,3 +1,5 @@
+package net.ruippeixotog.structs
+
 import annotation.tailrec
 import SkewBinomialQueue._
 

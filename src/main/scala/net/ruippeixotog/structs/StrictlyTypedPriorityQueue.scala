@@ -1,3 +1,5 @@
+package net.ruippeixotog.structs
+
 
 trait StrictlyTypedPriorityQueue[T, Q <: StrictlyTypedPriorityQueue[T, Q]] {
 
